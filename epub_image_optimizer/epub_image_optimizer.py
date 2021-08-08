@@ -2,9 +2,7 @@ from pathlib import Path
 import zipfile
 import xml.etree.ElementTree as ET
 import re
-import shutil
 import tinify
-import tempfile
 import logging
 from PIL import Image
 from io import BytesIO
