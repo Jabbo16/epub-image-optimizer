@@ -5,7 +5,8 @@ from click.exceptions import ClickException
 import tinify
 
 DEFAULT_OUTPUT_FOLDER = './epub_image_optimizer_output'
-MIN_IMAGE_RESOLUTION = (1,1)
+MIN_IMAGE_RESOLUTION = (1, 1)
+
 
 @click.command()
 @click.option('--input-dir', nargs=1, required=False, help='Input folder', type=click.Path(exists=True, file_okay=False, readable=True))
@@ -15,12 +16,13 @@ MIN_IMAGE_RESOLUTION = (1,1)
 @click.option('--tinify-api-key', nargs=1, required=False, help='Tinify api-key', type=str, envvar='TINIFY_API_KEY')
 @click.option('--version', is_flag=True, help='Show current version')
 def main(input_dir, output_dir, input_file, max_image_resolution, tinify_api_key, version):
+
     # Print version and exit
     if version:
-        from __init__ import __version__
+        from epub_image_optimizer import __version__
         click.echo(__version__)
         sys.exit(0)
-    
+
     # Custom validation
     # Both input options can not be present at the same time
     if input_dir and input_file:
@@ -36,18 +38,20 @@ def main(input_dir, output_dir, input_file, max_image_resolution, tinify_api_key
     if input_file:
         filename = click.format_filename(input_file, True)
         if not filename.__contains__(".epub"):
-             raise ClickException(
+            raise ClickException(
                 f'input-file "{filename}" is not an epub file')
 
+    # Validate Tinify API key
     if tinify_api_key:
         try:
             tinify.key = tinify_api_key
             tinify.validate()
             click.echo("Validated Tinify API key, number of compressions done this month: {}, remaining compressions this month (if free mode): {}".format(
-                     tinify.compression_count, 500 - tinify.compression_count))
+                tinify.compression_count, 500 - tinify.compression_count))
         except tinify.Error as e:
             # Validation of API key failed.
-            raise ClickException("Tinify API key validation failed: " + e.message)
+            raise ClickException(
+                "Tinify API key validation failed: " + e.message)
 
     # Check image_size params
     if max_image_resolution and max_image_resolution < MIN_IMAGE_RESOLUTION:
