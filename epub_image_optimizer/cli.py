@@ -1,15 +1,16 @@
-from epub_image_optimizer.image_optimizer import optimize_epub
-import click
 import logging
 import sys
-from click.exceptions import ClickException
-import tinify
-from pathlib import Path
 from glob import glob
+from pathlib import Path
+
+import click
+import tinify
+from click.exceptions import ClickException
+
+from epub_image_optimizer.image_optimizer import optimize_epub
 
 DEFAULT_OUTPUT_FOLDER = "./epub_image_optimizer_output"
 MIN_IMAGE_RESOLUTION = (1, 1)
-
 
 
 def validate_input_file(ctx, param, value):
@@ -131,7 +132,7 @@ def main(
         raise ClickException(
             'Atleast one of the "--input-dir" and "--input-file" parameters is required'
         )
-    
+
     input_epubs = None
     if input_dir:
         input_epubs = [Path(epub) for epub in glob(str(Path(input_dir, "*.epub")))]

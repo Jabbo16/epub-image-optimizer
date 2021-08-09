@@ -1,9 +1,10 @@
-from epub_image_optimizer import __version__
-from click.testing import CliRunner
-from epub_image_optimizer.cli import main
 import os
 from pathlib import Path
+
 import pytest
+from click.testing import CliRunner
+from epub_image_optimizer import __version__
+from epub_image_optimizer.cli import main
 
 TEST_DIR = Path(os.path.dirname(os.path.abspath(__file__)))
 TEST_EPUB = Path(TEST_DIR, "moby-dick.epub")

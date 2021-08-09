@@ -1,13 +1,14 @@
+import datetime
+import logging
+import re
+import zipfile
+from io import BytesIO, StringIO
 from pathlib import Path
 from typing import Tuple
-import zipfile
-import re
+
 import tinify
-import logging
-from PIL import Image
-from io import BytesIO, StringIO
-import datetime
 from defusedxml.lxml import _etree, parse
+from PIL import Image
 
 
 def get_opf(epub_zipfile: zipfile.ZipFile) -> str:
@@ -23,6 +24,7 @@ def get_opf(epub_zipfile: zipfile.ZipFile) -> str:
             return fname
     return None
 
+
 def get_cover_xhtml(epub_zipfile: zipfile.ZipFile) -> str:
     """
     Get the cover.xhtml file within the ebook archive.
@@ -36,7 +38,10 @@ def get_cover_xhtml(epub_zipfile: zipfile.ZipFile) -> str:
             return fname
     return None
 
-def find_cover_image(opf_file: bytes, opf_folder: Path, epub_zipfile: zipfile.ZipFile) -> Path:
+
+def find_cover_image(
+    opf_file: bytes, opf_folder: Path, epub_zipfile: zipfile.ZipFile
+) -> Path:
     root = _etree.fromstring(opf_file)
     ns = {
         "opf": "http://www.idpf.org/2007/opf",
@@ -88,8 +93,10 @@ def find_cover_image(opf_file: bytes, opf_folder: Path, epub_zipfile: zipfile.Zi
                     return None
                 with epub_zipfile.open(cover_xhtml_path, "r") as cover_xhtml_file:
                     cover_xhtml_content = cover_xhtml_file.read()
-                    root = parse(StringIO(str(cover_xhtml_content)), parser=_etree.HTMLParser())
-                    cover_image = root.xpath('//img/@src')[0]
+                    root = parse(
+                        StringIO(str(cover_xhtml_content)), parser=_etree.HTMLParser()
+                    )
+                    cover_image = root.xpath("//img/@src")[0]
                     # TODO log
                     print("Extracted Cover from cover.xhtml file")
                     return Path(opf_folder, cover_image).as_posix()
@@ -99,7 +106,10 @@ def find_cover_image(opf_file: bytes, opf_folder: Path, epub_zipfile: zipfile.Zi
 
 
 def optimize_epub(
-    input_epub: Path, output_dir: Path, max_image_resolution: Tuple[int, int] = None, tinify_api_key: str = None,
+    input_epub: Path,
+    output_dir: Path,
+    max_image_resolution: Tuple[int, int] = None,
+    tinify_api_key: str = None,
 ) -> Path:
     src_epub = input_epub.absolute()
     dst_epub = Path(
@@ -115,13 +125,13 @@ def optimize_epub(
             # TODO do something if not opf found
         opf_folder = Path(opf_file_path).parent
         cover_image_path = None
-        #print(opf_file_path)
+        # print(opf_file_path)
         with epub_zipfile.open(opf_file_path, "r") as opf_file:
             opf_content = opf_file.read()
             cover_image_path = find_cover_image(opf_content, opf_folder, epub_zipfile)
         if not cover_image_path:
             raise Exception(f"Cover image not found in EPUB {src_epub}")
-        #print(cover_image_path)
+        # print(cover_image_path)
         for item in epub_zipfile.infolist():
             if item.filename in cover_image_path:
                 continue
