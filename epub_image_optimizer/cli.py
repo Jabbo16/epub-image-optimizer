@@ -1,10 +1,11 @@
-from epub_image_optimizer.epub_image_optimizer import optimize_epub
+from epub_image_optimizer import optimize_epub
 import click
 import logging
 import sys
 from click.exceptions import ClickException
 import tinify
 from pathlib import Path
+from glob import glob
 
 DEFAULT_OUTPUT_FOLDER = "./epub_image_optimizer_output"
 MIN_IMAGE_RESOLUTION = (1, 1)
@@ -130,7 +131,11 @@ def main(
             'Atleast one of the "--input-dir" and "--input-file" parameters is required'
         )
     # TODO get epubs from either file or all inside folder, iterate and call function
-    input_epub = input_file
-    output_epub = optimize_epub(
-        input_epub, output_dir, max_image_resolution, tinify_api_key
-    )
+    input_epubs = [Path(input_file)]
+    if input_dir:
+        input_epubs = [Path(epub) for epub in glob(Path(input_dir, "*.epub"))]
+
+    for input_epub in input_epubs:
+        output_epub = optimize_epub(
+            input_epub, output_dir, max_image_resolution, tinify_api_key
+        )
