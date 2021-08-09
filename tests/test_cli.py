@@ -3,6 +3,7 @@ from click.testing import CliRunner
 from epub_image_optimizer.cli import main
 import os
 from pathlib import Path
+import pytest
 
 TEST_DIR = Path(os.path.dirname(os.path.abspath(__file__)))
 TEST_EPUB = Path(TEST_DIR, "moby-dick.epub")
@@ -81,3 +82,7 @@ def test_valid_input_folder():
     result = runner.invoke(main, BASE_COMMAND_FOLDER)
     print(result.output)
     assert result.exit_code == 0
+
+
+if __name__ == "__main__":
+    pytest.main(args=[__file__])
