@@ -7,8 +7,8 @@ import logging
 from PIL import Image
 from io import BytesIO, StringIO
 import datetime
-from lxml import etree
-from lxml.html import parse
+from defusedxml.lxml import _etree, parse
+from lxml.html import HTMLParser
 
 
 def get_opf(epub_zipfile: zipfile.ZipFile) -> str:
@@ -38,7 +38,7 @@ def get_cover_xhtml(epub_zipfile: zipfile.ZipFile) -> str:
     return None
 
 def find_cover_image(opf_file: bytes, opf_folder: Path, epub_zipfile: zipfile.ZipFile) -> Path:
-    root = etree.fromstring(opf_file)
+    root = _etree.fromstring(opf_file)
     ns = {
         "opf": "http://www.idpf.org/2007/opf",
     }
@@ -85,10 +85,11 @@ def find_cover_image(opf_file: bytes, opf_folder: Path, epub_zipfile: zipfile.Zi
                     return None
                 with epub_zipfile.open(cover_xhtml_path, "r") as cover_xhtml_file:
                     cover_xhtml_content = cover_xhtml_file.read()
-                    root = parse(StringIO(str(cover_xhtml_content)))
+                    root = parse(StringIO(str(cover_xhtml_content)), parser=HTMLParser())
                     cover_image = root.xpath('//img/@src')[0]
                     return Path(opf_folder, cover_image).as_posix()
-            except Exception:
+            except Exception as e:
+                print(e)
                 pass
     return None
 
