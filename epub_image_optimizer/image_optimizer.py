@@ -4,11 +4,14 @@ import re
 import zipfile
 from io import BytesIO, StringIO
 from pathlib import Path
-from typing import Tuple
+from typing import List, Tuple
 
 import tinify
 from defusedxml.lxml import _etree, parse
 from PIL import Image
+
+
+IMAGE_PATTERN = r"([-\w]+\.(?:jpg|png|jpeg))"
 
 
 def get_opf(epub_zipfile: zipfile.ZipFile) -> str:
@@ -39,6 +42,14 @@ def get_cover_xhtml(epub_zipfile: zipfile.ZipFile) -> str:
     return None
 
 
+def get_images(epub_zipfile: zipfile.ZipFile) -> List[Path]:
+    images = list()
+    for fname in epub_zipfile.namelist():
+        if re.findall(IMAGE_PATTERN, fname, re.IGNORECASE):
+            images.append(Path(fname).as_posix())
+    return images
+
+
 def find_cover_image(
     opf_file: bytes, opf_folder: Path, epub_zipfile: zipfile.ZipFile
 ) -> Path:
@@ -54,14 +65,13 @@ def find_cover_image(
             if item.get("name") == "cover":
                 cover_content = item.get("content")
                 break
-        image_pattern = r"([-\w]+\.(?:jpg|png|jpeg))"
-        regex = re.findall(image_pattern, cover_content, re.IGNORECASE)
+        regex = re.findall(IMAGE_PATTERN, cover_content, re.IGNORECASE)
         if not regex:
             manifest = root.find("opf:manifest", ns)
             for item in list(manifest):
                 if item.get("id") == cover_content:
                     image_href = item.get("href")
-                    regex = re.findall(image_pattern, image_href, re.IGNORECASE)
+                    regex = re.findall(IMAGE_PATTERN, image_href, re.IGNORECASE)
                     if not regex:
                         raise Exception
                     # TODO log
@@ -77,7 +87,7 @@ def find_cover_image(
             for item in list(manifest):
                 if item.get("id") == "cover-image":
                     image_href = item.get("href")
-                    regex = re.findall(image_pattern, image_href, re.IGNORECASE)
+                    regex = re.findall(IMAGE_PATTERN, image_href, re.IGNORECASE)
                     if not regex:
                         raise Exception
                     # TODO log
@@ -108,9 +118,11 @@ def find_cover_image(
 def optimize_epub(
     input_epub: Path,
     output_dir: Path,
+    all_images: bool,
     max_image_resolution: Tuple[int, int] = None,
     tinify_api_key: str = None,
 ) -> Path:
+
     src_epub = input_epub.absolute()
     dst_epub = Path(
         output_dir, src_epub.name.replace(".epub", "_optimized.epub")
@@ -119,38 +131,47 @@ def optimize_epub(
     with zipfile.ZipFile(src_epub) as epub_zipfile, zipfile.ZipFile(
         dst_epub, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9
     ) as outzip:
-        opf_file_path = get_opf(epub_zipfile)
-        if not opf_file_path:
-            pass
-            # TODO do something if not opf found
-        opf_folder = Path(opf_file_path).parent
-        cover_image_path = None
-        # print(opf_file_path)
-        with epub_zipfile.open(opf_file_path, "r") as opf_file:
-            opf_content = opf_file.read()
-            cover_image_path = find_cover_image(opf_content, opf_folder, epub_zipfile)
-        if not cover_image_path:
-            raise Exception(f"Cover image not found in EPUB {src_epub}")
-        # print(cover_image_path)
+        images_to_optimize = []
+        if not all_images:
+            opf_file_path = get_opf(epub_zipfile)
+            if not opf_file_path:
+                pass
+                # TODO do something if not opf found
+            opf_folder = Path(opf_file_path).parent
+            cover_image_path = None
+            with epub_zipfile.open(opf_file_path, "r") as opf_file:
+                opf_content = opf_file.read()
+                cover_image_path = find_cover_image(
+                    opf_content, opf_folder, epub_zipfile
+                )
+            if not cover_image_path:
+                raise Exception(f"Cover image not found in EPUB {src_epub}")
+            images_to_optimize.append(cover_image_path)
+        else:
+            # Find all images inside epub
+            images_to_optimize += get_images(epub_zipfile)
         for item in epub_zipfile.infolist():
-            if item.filename in cover_image_path:
+            if item.filename in images_to_optimize:
                 continue
             buffer = epub_zipfile.read(item.filename)
             outzip.writestr(item.filename, buffer)
-        with epub_zipfile.open(cover_image_path) as src_cover:
-            ztext = src_cover.read()
-            result_data = ztext
-            if max_image_resolution:
-                image = Image.open(BytesIO(ztext))
-                image.thumbnail(max_image_resolution)
-                result_data = BytesIO()
-                image.save(result_data, format=image.format)
-                result_data = result_data.getvalue()
-            if tinify_api_key:
-                tinify.key = tinify_api_key
-                result_data = tinify.from_buffer(result_data).to_buffer()
-            cover_zipfile = zipfile.ZipInfo(
-                filename=cover_image_path, date_time=datetime.datetime.now().timetuple()
-            )
-            outzip.writestr(cover_zipfile, result_data)
-            return dst_epub
+        for image_path in images_to_optimize:
+            with epub_zipfile.open(image_path) as image_file:
+                ztext = image_file.read()
+                result_data = ztext
+                if max_image_resolution:
+                    image = Image.open(BytesIO(ztext))
+                    image.thumbnail(max_image_resolution)
+                    result_data = BytesIO()
+                    image.save(result_data, format=image.format)
+                    result_data = result_data.getvalue()
+                if tinify_api_key:
+                    tinify.key = tinify_api_key
+                    result_data = tinify.from_buffer(result_data).to_buffer()
+                cover_zipfile = zipfile.ZipInfo(
+                    filename=image_path, date_time=datetime.datetime.now().timetuple()
+                )
+                outzip.writestr(cover_zipfile, result_data)
+                # TODO log
+                print(f"Optimized Image {image_path}")
+        return dst_epub

@@ -2,6 +2,7 @@ import logging
 import sys
 from glob import glob
 from pathlib import Path
+from typing import Tuple
 
 import click
 import tinify
@@ -13,7 +14,7 @@ DEFAULT_OUTPUT_FOLDER = "./epub_image_optimizer_output"
 MIN_IMAGE_RESOLUTION = (1, 1)
 
 
-def validate_input_file(ctx, param, value):
+def validate_input_file(ctx, param, value) -> Path:
     if not value:
         return
     # Check source file is epub
@@ -23,7 +24,7 @@ def validate_input_file(ctx, param, value):
     return value
 
 
-def validate_tinify_api_key(ctx, param, value):
+def validate_tinify_api_key(ctx, param, value) -> str:
     # Validate Tinify API key
     if not value:
         return
@@ -31,10 +32,8 @@ def validate_tinify_api_key(ctx, param, value):
         tinify.key = value
         tinify.validate()
         click.echo(
-            "Validated Tinify API key, number of compressions done this month: {}, \
-                remaining compressions this month (if free mode): {}".format(
-                tinify.compression_count, 500 - tinify.compression_count
-            )
+            f"Validated Tinify API key, number of compressions done this month: {tinify.compression_count}, "
+            f"remaining compressions this month (if free mode): {500 - tinify.compression_count}"
         )
     except tinify.Error as e:
         # Validation of API key failed.
@@ -44,7 +43,7 @@ def validate_tinify_api_key(ctx, param, value):
     return value
 
 
-def validate_max_image_resolution(ctx, param, value):
+def validate_max_image_resolution(ctx, param, value) -> Tuple[int, int]:
     # Check image_size params
     if not value:
         return
@@ -57,7 +56,7 @@ def validate_max_image_resolution(ctx, param, value):
     return value
 
 
-def validate_output_dir(unused_ctx, unused_param, value):
+def validate_output_dir(unused_ctx, unused_param, value) -> Path:
     output_folder = Path(value)
     # Create folder
     try:
@@ -67,15 +66,6 @@ def validate_output_dir(unused_ctx, unused_param, value):
             f"Can not create output folder {output_folder.absolute()}: {e}"
         )
     return output_folder.absolute()
-
-
-def show_version(unused_ctx, unused_param, value):
-    # Print version and exit
-    if value:
-        from epub_image_optimizer import __version__
-
-        click.echo(__version__)
-        sys.exit(0)
 
 
 @click.command()
@@ -120,11 +110,26 @@ def show_version(unused_ctx, unused_param, value):
     envvar="TINIFY_API_KEY",
 )
 @click.option(
-    "--version", is_flag=True, help="Show current version", callback=show_version
+    "--all-images",
+    is_flag=True,
+    help="Optimize all images inside ebook, not only the cover",
 )
+@click.option("--version", is_flag=True, help="Show current version")
 def main(
-    input_dir, output_dir, input_file, max_image_resolution, tinify_api_key, version
+    input_dir: Path,
+    output_dir: Path,
+    input_file: Path,
+    max_image_resolution: Tuple[int, int],
+    tinify_api_key: str,
+    all_images: bool,
+    version: bool,
 ):
+    # Check if version is True, in that case, print version and exit
+    if version:
+        from epub_image_optimizer import __version__
+
+        click.echo(__version__)
+        sys.exit(0)
     # Custom validation
     # Both input options can not be present at the same time
     if input_dir and input_file:
@@ -149,7 +154,7 @@ def main(
         raise Exception(f"No epubs found in input-dir {input_dir}")
     for input_epub in input_epubs:
         output_epub = optimize_epub(
-            input_epub, output_dir, max_image_resolution, tinify_api_key
+            input_epub, output_dir, all_images, max_image_resolution, tinify_api_key
         )
         # TODO log
         click.echo(f"Created optimized EPUB file {output_epub.absolute()}")
