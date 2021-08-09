@@ -23,7 +23,7 @@ def validate_input_file(ctx, param, value):
     return value
 
 
-def validate_tinify_api_key(unused_ctx, unused_param, value):
+def validate_tinify_api_key(ctx, param, value):
     # Validate Tinify API key
     if not value:
         return
@@ -39,20 +39,20 @@ def validate_tinify_api_key(unused_ctx, unused_param, value):
     except tinify.Error as e:
         # Validation of API key failed.
         raise click.BadParameter(
-            "Tinify API key validation failed: " + e.message, ctx, param
+            f"Tinify API key validation failed: {e.message}", ctx, param
         )
     return value
 
 
-def validate_max_image_resolution(unused_ctx, unused_param, value):
+def validate_max_image_resolution(ctx, param, value):
     # Check image_size params
     if not value:
         return
     if value < MIN_IMAGE_RESOLUTION:
         raise click.BadParameter(
-            '"--max-image-size" values can not be lower than "{}"'.format(
-                MIN_IMAGE_RESOLUTION
-            )
+            f'"--max-image-size" values can not be lower than "{MIN_IMAGE_RESOLUTION}"',
+            ctx,
+            param,
         )
     return value
 
@@ -64,7 +64,7 @@ def validate_output_dir(unused_ctx, unused_param, value):
         output_folder.mkdir(parents=True, exist_ok=True)
     except Exception as e:
         raise ClickException(
-            "Can not create output folder {}: {}".format(output_folder.absolute(), e)
+            f"Can not create output folder {output_folder.absolute()}: {e}"
         )
     return output_folder.absolute()
 
