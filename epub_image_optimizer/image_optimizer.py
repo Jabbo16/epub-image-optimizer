@@ -114,11 +114,12 @@ def find_cover_image(
                 pass
     return None
 
-
+# TODO logs everywhere
 def optimize_epub(
     input_epub: Path,
     output_dir: Path,
     all_images: bool,
+    keep_color: bool,
     max_image_resolution: Tuple[int, int] = None,
     tinify_api_key: str = None,
 ) -> Path:
@@ -159,12 +160,15 @@ def optimize_epub(
             with epub_zipfile.open(image_path) as image_file:
                 ztext = image_file.read()
                 result_data = ztext
+                image = Image.open(BytesIO(ztext))
+                image_format = image.format
                 if max_image_resolution:
-                    image = Image.open(BytesIO(ztext))
                     image.thumbnail(max_image_resolution)
-                    result_data = BytesIO()
-                    image.save(result_data, format=image.format)
-                    result_data = result_data.getvalue()
+                if not keep_color:
+                    image = image.convert('L')
+                result_data = BytesIO()
+                image.save(result_data, format=image_format)
+                result_data = result_data.getvalue()
                 if tinify_api_key:
                     tinify.key = tinify_api_key
                     result_data = tinify.from_buffer(result_data).to_buffer()

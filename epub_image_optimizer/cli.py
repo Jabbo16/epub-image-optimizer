@@ -114,6 +114,11 @@ def validate_output_dir(unused_ctx, unused_param, value) -> Path:
     is_flag=True,
     help="Optimize all images inside ebook, not only the cover",
 )
+@click.option(
+    "--keep-color",
+    is_flag=True,
+    help="If this flag is present images will preserve colors (not converted to BW)",
+)
 @click.option("--version", is_flag=True, help="Show current version")
 def main(
     input_dir: Path,
@@ -122,6 +127,7 @@ def main(
     max_image_resolution: Tuple[int, int],
     tinify_api_key: str,
     all_images: bool,
+    keep_color: bool,
     version: bool,
 ):
     # Check if version is True, in that case, print version and exit
@@ -154,7 +160,7 @@ def main(
         raise Exception(f"No epubs found in input-dir {input_dir}")
     for input_epub in input_epubs:
         output_epub = optimize_epub(
-            input_epub, output_dir, all_images, max_image_resolution, tinify_api_key
+            input_epub, output_dir, all_images, keep_color, max_image_resolution, tinify_api_key
         )
         # TODO log
         click.echo(f"Created optimized EPUB file {output_epub.absolute()}")
