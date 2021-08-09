@@ -26,57 +26,73 @@ runner = CliRunner()
 
 def test_version_cli():
     result = runner.invoke(main, VERSION_COMMAND)
-    assert result.exit_code == 0
-    assert result.output.strip() == __version__
+    if result.exit_code != 0:
+        raise AssertionError
+    if result.output.strip() != __version__:
+        raise AssertionError
 
 
 def test_no_inputs():
     result = runner.invoke(main, [])
-    assert result.exit_code == 1
+    if result.exit_code != 1:
+        raise AssertionError
 
 
 def test_both_inputs():
     result = runner.invoke(main, BAD_BOTH_PARAMS_COMMAND)
-    assert result.exit_code == 1
+    if result.exit_code != 1:
+        raise AssertionError
 
 
 def test_bad_tinify_key():
     result = runner.invoke(main, BAD_TINIFY_COMMAND)
-    assert result.exit_code == 2
+    if result.exit_code != 2:
+        raise AssertionError
 
 
 def test_bad_max_image_res():
     result = runner.invoke(main, BAD_MAX_IMAGE_RES_COMMAND_1)
-    assert result.exit_code == 2
+    if result.exit_code != 2:
+        raise AssertionError
     result = runner.invoke(main, BAD_MAX_IMAGE_RES_COMMAND_2)
-    assert result.exit_code == 2
+    if result.exit_code != 2:
+        raise AssertionError
     result = runner.invoke(main, BAD_MAX_IMAGE_RES_COMMAND_3)
-    assert result.exit_code == 2
+    if result.exit_code != 2:
+        raise AssertionError
 
 
 def test_bad_input_file_not_exists():
     result = runner.invoke(main, BAD_INPUT_FILE_NOTEXISTS_COMMAND)
-    assert result.exit_code == 2
-    assert result.output.__contains__("does not exist")
+    if result.exit_code != 2:
+        raise AssertionError
+    if not result.output.__contains__("does not exist"):
+        raise AssertionError
 
 
 def test_bad_input_file_not_epub():
     result = runner.invoke(main, BAD_INPUT_FILE_NOT_EPUB_COMMAND)
-    assert result.exit_code == 2
-    assert result.output.__contains__("not an epub file")
+    if result.exit_code != 2:
+        raise AssertionError
+    if not result.output.__contains__("not an epub file"):
+        raise AssertionError
 
 
 def test_bad_input_folder():
     result = runner.invoke(main, BAD_INPUT_FOLDER_COMMAND)
-    assert result.exit_code == 2
-    assert result.output.__contains__("does not exist")
+    if result.exit_code != 2:
+        raise AssertionError
+    if not result.output.__contains__("does not exist"):
+        raise AssertionError
 
 
 def test_valid_input_file():
     result = runner.invoke(main, BASE_COMMAND_FILE)
-    assert result.exit_code == 0
+    if result.exit_code != 0:
+        raise AssertionError
 
 
 def test_valid_input_folder():
     result = runner.invoke(main, BASE_COMMAND_FOLDER)
-    assert result.exit_code == 0
+    if result.exit_code != 0:
+        raise AssertionError
