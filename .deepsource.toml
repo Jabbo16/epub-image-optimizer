@@ -1,5 +1,12 @@
 version = 1
 
+test_patterns = ["test_*.py"]
+
+exclude_patterns = [
+    ".vscode/**",
+    ".github/**"
+]
+
 [[analyzers]]
 name = "python"
 enabled = true
