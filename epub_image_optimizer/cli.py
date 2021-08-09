@@ -14,46 +14,50 @@ MIN_IMAGE_RESOLUTION = (1, 1)
 
 
 def validate_input_file(ctx, param, value):
-    if value:
-        # Check source file is epub
-        filename = click.format_filename(value, True)
-        if not filename.__contains__(".epub"):
-            raise click.BadParameter(f'"{filename}" is not an epub file', ctx, param)
-        return value
+    if not value:
+        return
+    # Check source file is epub
+    filename = click.format_filename(value, True)
+    if not filename.__contains__(".epub"):
+        raise click.BadParameter(f'"{filename}" is not an epub file', ctx, param)
+    return value
 
 
-def validate_tinify_api_key(ctx, param, value):
+def validate_tinify_api_key(unused_ctx, unused_param, value):
     # Validate Tinify API key
-    if value:
-        try:
-            tinify.key = value
-            tinify.validate()
-            click.echo(
-                "Validated Tinify API key, number of compressions done this month: {}, remaining compressions this month (if free mode): {}".format(
-                    tinify.compression_count, 500 - tinify.compression_count
-                )
+    if not value:
+        return
+    try:
+        tinify.key = value
+        tinify.validate()
+        click.echo(
+            "Validated Tinify API key, number of compressions done this month: {}, \
+                remaining compressions this month (if free mode): {}".format(
+                tinify.compression_count, 500 - tinify.compression_count
             )
-        except tinify.Error as e:
-            # Validation of API key failed.
-            raise click.BadParameter(
-                "Tinify API key validation failed: " + e.message, ctx, param
-            )
-        return value
+        )
+    except tinify.Error as e:
+        # Validation of API key failed.
+        raise click.BadParameter(
+            "Tinify API key validation failed: " + e.message, ctx, param
+        )
+    return value
 
 
-def validate_max_image_resolution(ctx, param, value):
+def validate_max_image_resolution(unused_ctx, unused_param, value):
     # Check image_size params
-    if value:
-        if value < MIN_IMAGE_RESOLUTION:
-            raise click.BadParameter(
-                '"--max-image-size" values can not be lower than "{}"'.format(
-                    MIN_IMAGE_RESOLUTION, ctx, param
-                )
+    if not value:
+        return
+    if value < MIN_IMAGE_RESOLUTION:
+        raise click.BadParameter(
+            '"--max-image-size" values can not be lower than "{}"'.format(
+                MIN_IMAGE_RESOLUTION
             )
-        return value
+        )
+    return value
 
 
-def validate_output_dir(ctx, param, value):
+def validate_output_dir(unused_ctx, unused_param, value):
     output_folder = Path(value)
     # Create folder
     try:
@@ -65,7 +69,7 @@ def validate_output_dir(ctx, param, value):
     return output_folder.absolute()
 
 
-def show_version(ctx, param, value):
+def show_version(unused_ctx, unused_param, value):
     # Print version and exit
     if value:
         from epub_image_optimizer import __version__
@@ -102,7 +106,8 @@ def show_version(ctx, param, value):
     "--max-image-resolution",
     required=False,
     callback=validate_max_image_resolution,
-    help="Fit image resolution to this values, good for handling images with higher resolutions than your ebook-reader",
+    help="Fit image resolution to this values, good for handling \
+        images with higher resolutions than your ebook-reader",
     type=click.Tuple([int, int]),
 )
 @click.option(
@@ -124,7 +129,8 @@ def main(
     # Both input options can not be present at the same time
     if input_dir and input_file:
         raise ClickException(
-            '"--input-dir" and "--input-file" parameters can not be set at the same time'
+            '"--input-dir" and "--input-file" \
+                parameters can not be set at the same time'
         )
 
     # Both input options can not be missing at the same time

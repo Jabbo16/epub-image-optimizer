@@ -54,7 +54,7 @@ def find_cover_image(
             if item.get("name") == "cover":
                 cover_content = item.get("content")
                 break
-        image_pattern = "([-\w]+\.(?:jpg|png|jpeg))"
+        image_pattern = r"([-\w]+\.(?:jpg|png|jpeg))"
         regex = re.findall(image_pattern, cover_content, re.IGNORECASE)
         if not regex:
             manifest = root.find("opf:manifest", ns)
@@ -100,7 +100,7 @@ def find_cover_image(
                     # TODO log
                     print("Extracted Cover from cover.xhtml file")
                     return Path(opf_folder, cover_image).as_posix()
-            except Exception as e:
+            except Exception:
                 pass
     return None
 
