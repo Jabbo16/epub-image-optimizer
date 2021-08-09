@@ -4,7 +4,7 @@ from epub_image_optimizer.cli import main
 import os
 from pathlib import Path
 
-TEST_DIR = os.path.dirname(os.path.abspath(__file__))
+TEST_DIR = Path(os.path.dirname(os.path.abspath(__file__)))
 TEST_EPUB = Path(TEST_DIR, "moby-dick.epub")
 TEST_BAD_EPUB = Path(TEST_DIR, "notanepub.test")
 TEST_BAD_FOLDER = Path(TEST_DIR, "idontexist")
@@ -79,4 +79,5 @@ def test_valid_input_file():
 
 def test_valid_input_folder():
     result = runner.invoke(main, BASE_COMMAND_FOLDER)
+    print(result.output)
     assert result.exit_code == 0
