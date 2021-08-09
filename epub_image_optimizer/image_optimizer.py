@@ -8,7 +8,6 @@ from PIL import Image
 from io import BytesIO, StringIO
 import datetime
 from defusedxml.lxml import _etree, parse
-from lxml.html import HTMLParser
 
 
 def get_opf(epub_zipfile: zipfile.ZipFile) -> str:
@@ -60,6 +59,8 @@ def find_cover_image(opf_file: bytes, opf_folder: Path, epub_zipfile: zipfile.Zi
                     regex = re.findall(image_pattern, image_href, re.IGNORECASE)
                     if not regex:
                         raise Exception
+                    # TODO log
+                    print("Extracted Cover from metadata")
                     return Path(opf_folder, image_href).as_posix()
             raise Exception
         return Path(opf_folder, cover_content).as_posix()
@@ -74,6 +75,8 @@ def find_cover_image(opf_file: bytes, opf_folder: Path, epub_zipfile: zipfile.Zi
                     regex = re.findall(image_pattern, image_href, re.IGNORECASE)
                     if not regex:
                         raise Exception
+                    # TODO log
+                    print("Extracted Cover from manifest")
                     return Path(opf_folder, image_href).as_posix()
             raise Exception
         except Exception:
@@ -85,11 +88,12 @@ def find_cover_image(opf_file: bytes, opf_folder: Path, epub_zipfile: zipfile.Zi
                     return None
                 with epub_zipfile.open(cover_xhtml_path, "r") as cover_xhtml_file:
                     cover_xhtml_content = cover_xhtml_file.read()
-                    root = parse(StringIO(str(cover_xhtml_content)), parser=HTMLParser())
+                    root = parse(StringIO(str(cover_xhtml_content)), parser=_etree.HTMLParser())
                     cover_image = root.xpath('//img/@src')[0]
+                    # TODO log
+                    print("Extracted Cover from cover.xhtml file")
                     return Path(opf_folder, cover_image).as_posix()
             except Exception as e:
-                print(e)
                 pass
     return None
 
@@ -111,13 +115,13 @@ def optimize_epub(
             # TODO do something if not opf found
         opf_folder = Path(opf_file_path).parent
         cover_image_path = None
-        print(opf_file_path)
+        #print(opf_file_path)
         with epub_zipfile.open(opf_file_path, "r") as opf_file:
             opf_content = opf_file.read()
             cover_image_path = find_cover_image(opf_content, opf_folder, epub_zipfile)
         if not cover_image_path:
             raise Exception(f"Cover image not found in EPUB {src_epub}")
-        print(cover_image_path)
+        #print(cover_image_path)
         for item in epub_zipfile.infolist():
             if item.filename in cover_image_path:
                 continue

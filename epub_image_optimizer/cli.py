@@ -144,3 +144,5 @@ def main(
         output_epub = optimize_epub(
             input_epub, output_dir, max_image_resolution, tinify_api_key
         )
+        # TODO log
+        click.echo(f"Created optimized EPUB file {output_epub.absolute()}")
