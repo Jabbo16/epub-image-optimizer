@@ -10,7 +10,6 @@ import tinify
 from defusedxml.lxml import _etree, parse
 from PIL import Image
 
-
 IMAGE_PATTERN = r"([-\w]+\.(?:jpg|png|jpeg))"
 
 

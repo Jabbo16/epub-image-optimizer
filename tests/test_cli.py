@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 from click.testing import CliRunner
+
 from epub_image_optimizer import __version__
 from epub_image_optimizer.cli import main
 
