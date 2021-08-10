@@ -60,8 +60,10 @@ def validate_tinify_api_key(ctx, param, value) -> str:
         tinify.key = value
         tinify.validate()
         click.echo(
-            f"Validated Tinify API key, number of compressions done this month: {tinify.compression_count}, "
-            f"remaining compressions this month (if free mode): {500 - tinify.compression_count}"
+            "Validated Tinify API key, number of compressions done this month: {}, "
+            "remaining compressions this month (if free mode): {}".format(
+                tinify.compression_count, 500 - tinify.compression_count
+            )
         )
     except tinify.Error as e:
         # Validation of API key failed.
@@ -81,7 +83,7 @@ def validate_max_image_resolution(ctx, param, value) -> Tuple[int, int]:
         value ([type]): Click parameter value
 
     Raises:
-        click.BadParameter: if either Width or Height are lower than allowed MIN_IMAGE_RESOLUTION
+        click.BadParameter: if target size is lower than :attr:`MIN_IMAGE_RESOLUTION`
 
     Returns:
         Tuple[int, int]: Size to fit images
@@ -191,9 +193,9 @@ def main(
 
     Args:
         input_dir (Path): Directory where the input epub files are located at
-        output_dir (Path): Directory where the output, optimized epub files will be saved to
+        output_dir (Path): Output directory
         input_file (Path): Input epub file location
-        max_image_resolution (Tuple[int, int]): Fit images to this resolution, useful if you want images to fit to your ebook-reader screen resolution
+        max_image_resolution (Tuple[int, int]): Fit images to this resolution
         tinify_api_key (str): Tinify API key
         only_cover (bool): if True, optimize only cover image
         keep_color (bool): if True, don't transform images to B&W
