@@ -15,6 +15,20 @@ MIN_IMAGE_RESOLUTION = (1, 1)
 
 
 def validate_input_file(ctx, param, value) -> Path:
+    """
+    Validate if input file is an epub file
+
+    Args:
+        ctx ([type]): Click context
+        param ([type]): Click parameter
+        value ([type]): Click parameter value
+
+    Raises:
+        click.BadParameter: If input file is not an epub file
+
+    Returns:
+        Path: Path to the input file
+    """
     if not value:
         return
     # Check source file is epub
@@ -25,6 +39,20 @@ def validate_input_file(ctx, param, value) -> Path:
 
 
 def validate_tinify_api_key(ctx, param, value) -> str:
+    """
+    Validates that the Tinify API key is valid
+
+    Args:
+        ctx ([type]): Click context
+        param ([type]): Click parameter
+        value ([type]): Click parameter value
+
+    Raises:
+        click.BadParameter: If validation fails
+
+    Returns:
+        str: Tinify API key
+    """
     # Validate Tinify API key
     if not value:
         return
@@ -44,6 +72,20 @@ def validate_tinify_api_key(ctx, param, value) -> str:
 
 
 def validate_max_image_resolution(ctx, param, value) -> Tuple[int, int]:
+    """
+    Validates Width and Height
+
+    Args:
+        ctx ([type]): Click context
+        param ([type]): Click parameter
+        value ([type]): Click parameter value
+
+    Raises:
+        click.BadParameter: if either Width or Height are lower than allowed MIN_IMAGE_RESOLUTION
+
+    Returns:
+        Tuple[int, int]: Size to fit images
+    """
     # Check image_size params
     if not value:
         return
@@ -57,6 +99,20 @@ def validate_max_image_resolution(ctx, param, value) -> Tuple[int, int]:
 
 
 def validate_output_dir(unused_ctx, unused_param, value) -> Path:
+    """
+    Validate output dir, creates dir
+
+    Args:
+        ctx ([type]): Click context
+        param ([type]): Click parameter
+        value ([type]): Click parameter value
+
+    Raises:
+        ClickException: If program fails to create output directory
+
+    Returns:
+        Path: Output directory path
+    """
     output_folder = Path(value)
     # Create folder
     try:
@@ -110,9 +166,9 @@ def validate_output_dir(unused_ctx, unused_param, value) -> Path:
     envvar="TINIFY_API_KEY",
 )
 @click.option(
-    "--all-images",
+    "--only-cover",
     is_flag=True,
-    help="Optimize all images inside ebook, not only the cover",
+    help="Optimize only the cover image, ignoring all other images",
 )
 @click.option(
     "--keep-color",
@@ -126,10 +182,27 @@ def main(
     input_file: Path,
     max_image_resolution: Tuple[int, int],
     tinify_api_key: str,
-    all_images: bool,
+    only_cover: bool,
     keep_color: bool,
     version: bool,
 ):
+    """
+    CLI entrypoint method
+
+    Args:
+        input_dir (Path): Directory where the input epub files are located at
+        output_dir (Path): Directory where the output, optimized epub files will be saved to
+        input_file (Path): Input epub file location
+        max_image_resolution (Tuple[int, int]): Fit images to this resolution, useful if you want images to fit to your ebook-reader screen resolution
+        tinify_api_key (str): Tinify API key
+        only_cover (bool): if True, optimize only cover image
+        keep_color (bool): if True, don't transform images to B&W
+        version (bool): if True, show program version and exit
+
+    Raises:
+        ClickException: If validation of any parameters fail
+        Exception: If no epub files found if using the 'input-dir' parameter
+    """
     # Check if version is True, in that case, print version and exit
     if version:
         from epub_image_optimizer import __version__
@@ -160,7 +233,12 @@ def main(
         raise Exception(f"No epubs found in input-dir {input_dir}")
     for input_epub in input_epubs:
         output_epub = optimize_epub(
-            input_epub, output_dir, all_images, keep_color, max_image_resolution, tinify_api_key
+            input_epub,
+            output_dir,
+            only_cover,
+            keep_color,
+            max_image_resolution,
+            tinify_api_key,
         )
         # TODO log
         click.echo(f"Created optimized EPUB file {output_epub.absolute()}")

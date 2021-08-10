@@ -18,9 +18,12 @@ def get_opf(epub_zipfile: zipfile.ZipFile) -> str:
     """
     Get the .opf file within the ebook archive.
 
+    Args:
+        epub_zipfile (zipfile.ZipFile): Epub zipfile
+
     Returns:
         (str): the path to the .opf file.
-        None: if not found
+        (None): if not found
     """
     for fname in epub_zipfile.namelist():
         if fname.endswith(".opf"):
@@ -32,9 +35,12 @@ def get_cover_xhtml(epub_zipfile: zipfile.ZipFile) -> str:
     """
     Get the cover.xhtml file within the ebook archive.
 
+    Args:
+        epub_zipfile (zipfile.ZipFile): Epub zipfile
+
     Returns:
         (str): the path to the cover.xhtml file.
-        None: if not found
+        (None): if not found
     """
     for fname in epub_zipfile.namelist():
         if fname.endswith("cover.xhtml"):
@@ -43,6 +49,15 @@ def get_cover_xhtml(epub_zipfile: zipfile.ZipFile) -> str:
 
 
 def get_images(epub_zipfile: zipfile.ZipFile) -> List[Path]:
+    """
+    Find and return a list of all images inside the epub file
+
+    Args:
+        epub_zipfile (zipfile.ZipFile): Epub zipfile
+
+    Returns:
+        List[Path]: List of paths of each image found
+    """
     images = list()
     for fname in epub_zipfile.namelist():
         if re.findall(IMAGE_PATTERN, fname, re.IGNORECASE):
@@ -53,10 +68,23 @@ def get_images(epub_zipfile: zipfile.ZipFile) -> List[Path]:
 def find_cover_image(
     opf_file: bytes, opf_folder: Path, epub_zipfile: zipfile.ZipFile
 ) -> Path:
+    """
+    Searches for cover image inside the epub file.
+    It has 3 different alternatives:
+    First, tries to retrieve cover image from metadata tags found in the opf file.
+    Second, tries to retrieve cover image from manifest tags found in the opf file.
+    At last, tries to find the cover image by looking at the 'cover.xhtml' file (if present).
+
+    Args:
+        opf_file (bytes): content of the .opf file of the epub file
+        opf_folder (Path): path where the .opf file is located inside the epub file
+        epub_zipfile (zipfile.ZipFile): epub zipfile
+
+    Returns:
+        Path: Cover image location
+    """
     root = _etree.fromstring(opf_file)
-    ns = {
-        "opf": "http://www.idpf.org/2007/opf",
-    }
+    ns = {"opf": "http://www.idpf.org/2007/opf"}
     try:
         # Method #1: Search metadata first
         metadata = root.find("opf:metadata", ns)
@@ -114,16 +142,33 @@ def find_cover_image(
                 pass
     return None
 
+
 # TODO logs everywhere
 def optimize_epub(
     input_epub: Path,
     output_dir: Path,
-    all_images: bool,
+    only_cover: bool,
     keep_color: bool,
     max_image_resolution: Tuple[int, int] = None,
     tinify_api_key: str = None,
 ) -> Path:
+    """
+    Main method, optimizes images inside epub file
 
+    Args:
+        input_epub (Path): Path to the epub file to optimize
+        output_dir (Path): Path where the output epub file will be created
+        only_cover (bool): if True, optimize only cover image
+        keep_color (bool): if True, don't transform images to B&W
+        max_image_resolution (Tuple[int, int], optional): Fit images to this resolution if bigger. Defaults to None.
+        tinify_api_key (str, optional): API key for the Tinify image optimizing service. Defaults to None.
+
+    Raises:
+        Exception: If it can't optimize epub or if cover image is not found (if only_cover is True)
+
+    Returns:
+        Path: Path to the generated, optimized epub file
+    """
     src_epub = input_epub.absolute()
     dst_epub = Path(
         output_dir, src_epub.name.replace(".epub", "_optimized.epub")
@@ -133,7 +178,7 @@ def optimize_epub(
         dst_epub, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9
     ) as outzip:
         images_to_optimize = []
-        if not all_images:
+        if only_cover:
             opf_file_path = get_opf(epub_zipfile)
             if not opf_file_path:
                 pass
@@ -165,7 +210,7 @@ def optimize_epub(
                 if max_image_resolution:
                     image.thumbnail(max_image_resolution)
                 if not keep_color:
-                    image = image.convert('L')
+                    image = image.convert("L")
                 result_data = BytesIO()
                 image.save(result_data, format=image_format)
                 result_data = result_data.getvalue()
