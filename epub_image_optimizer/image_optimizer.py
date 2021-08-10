@@ -58,7 +58,7 @@ def get_images(epub_zipfile: zipfile.ZipFile) -> List[Path]:
     Returns:
         List[Path]: List of paths of each image found
     """
-    images = list()
+    images = []
     for fname in epub_zipfile.namelist():
         if re.findall(IMAGE_PATTERN, fname, re.IGNORECASE):
             images.append(Path(fname).as_posix())
