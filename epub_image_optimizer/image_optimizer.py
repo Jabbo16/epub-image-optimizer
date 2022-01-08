@@ -6,8 +6,8 @@ from io import BytesIO, StringIO
 from pathlib import Path
 from typing import List, Tuple
 
-import tinify
 import enlighten
+import tinify
 from defusedxml.lxml import _etree, parse
 from PIL import Image
 
@@ -130,7 +130,7 @@ def find_cover_image(
                     root = parse(
                         StringIO(str(cover_xhtml_content)), parser=_etree.HTMLParser()
                     )
-                    cover_image = root.xpath("//img/@src")[0]      
+                    cover_image = root.xpath("//img/@src")[0]
                     return Path(opf_folder, cover_image).as_posix()
             except Exception:
                 pass
@@ -200,7 +200,9 @@ def optimize_epub(
             outzip.writestr(item.filename, buffer)
         # Setup progress bar
         manager = enlighten.get_manager()
-        pbar = manager.counter(total=len(images_to_optimize), desc='Ticks', unit='ticks')
+        pbar = manager.counter(
+            total=len(images_to_optimize), desc="Ticks", unit="ticks"
+        )
         for image_path in images_to_optimize:
             with epub_zipfile.open(image_path) as image_file:
                 ztext = image_file.read()
