@@ -198,7 +198,7 @@ def main(
     log_level: str,
     version: bool,
 ):
-    """ EPUB Image Optimization tool """
+    """EPUB Image Optimization tool"""
     # Check if version is True, in that case, print version and exit
     if version:
         from epub_image_optimizer import __version__
