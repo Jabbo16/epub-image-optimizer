@@ -198,23 +198,7 @@ def main(
     log_level: str,
     version: bool,
 ):
-    """
-    CLI entrypoint method
-
-    Args:
-        input_dir (Path): Directory where the input epub files are located at
-        output_dir (Path): Output directory
-        input_file (Path): Input epub file location
-        max_image_resolution (Tuple[int, int]): Fit images to this resolution
-        tinify_api_key (str): Tinify API key
-        only_cover (bool): if True, optimize only cover image
-        keep_color (bool): if True, don't transform images to B&W
-        version (bool): if True, show program version and exit
-
-    Raises:
-        ClickException: If validation of any parameters fail
-        Exception: If no epub files found if using the 'input-dir' parameter
-    """
+    """ EPUB Image Optimization tool """
     # Check if version is True, in that case, print version and exit
     if version:
         from epub_image_optimizer import __version__

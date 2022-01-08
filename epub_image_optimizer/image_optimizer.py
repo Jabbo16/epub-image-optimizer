@@ -137,7 +137,6 @@ def find_cover_image(
     return None
 
 
-# TODO logs everywhere
 def optimize_epub(
     input_epub: Path,
     output_dir: Path,
