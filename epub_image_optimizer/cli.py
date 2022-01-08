@@ -1,4 +1,5 @@
 import logging
+import coloredlogs
 import sys
 from glob import glob
 from pathlib import Path
@@ -177,6 +178,14 @@ def validate_output_dir(unused_ctx, unused_param, value) -> Path:
     is_flag=True,
     help="If this flag is present images will preserve colors (not converted to BW)",
 )
+@click.option(
+    "--log-level",
+    required=False,
+    nargs=1,
+    default="INFO",
+    type=click.Choice(['INFO', 'DEBUG', 'WARN', 'ERROR'], case_sensitive=False),
+    help="Set log level, default is 'INFO'",
+)
 @click.option("--version", is_flag=True, help="Show current version")
 def main(
     input_dir: Path,
@@ -186,6 +195,7 @@ def main(
     tinify_api_key: str,
     only_cover: bool,
     keep_color: bool,
+    log_level: str,
     version: bool,
 ):
     """
@@ -224,7 +234,8 @@ def main(
         raise ClickException(
             'Atleast one of the "--input-dir" and "--input-file" parameters is required'
         )
-
+    log = logging.getLogger("epub_image_optimizer")
+    coloredlogs.install(fmt='%(asctime)s,%(msecs)03d %(name)s %(levelname)s %(message)s', level=log_level, logger=log)
     input_epubs = None
     if input_dir:
         input_epubs = [Path(epub) for epub in glob(str(Path(input_dir, "*.epub")))]
@@ -234,13 +245,20 @@ def main(
         # TODO better exception handling overall
         raise Exception(f"No epubs found in input-dir {input_dir}")
     for input_epub in input_epubs:
-        output_epub = optimize_epub(
-            input_epub,
-            output_dir,
-            only_cover,
-            keep_color,
-            max_image_resolution,
-            tinify_api_key,
-        )
-        # TODO log
-        click.echo(f"Created optimized EPUB file {output_epub.absolute()}")
+        # Create a logger object.
+        epub_log = logging.getLogger(input_epub.name)
+        coloredlogs.install(fmt='%(asctime)s,%(msecs)03d %(name)s %(levelname)s %(message)s', level=log_level, logger=epub_log)
+        try:
+            log.info("Optimizing EPUB file %s", input_epub.absolute())
+            output_epub = optimize_epub(
+                input_epub,
+                output_dir,
+                only_cover,
+                keep_color,
+                epub_log,
+                max_image_resolution,
+                tinify_api_key,
+            )
+            log.info("Created optimized EPUB file %s", output_epub.absolute())
+        except Exception as e:
+            log.exception("Error optimizing %s: ", input_epub.name, e)

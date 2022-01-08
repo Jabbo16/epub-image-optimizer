@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import List, Tuple
 
 import tinify
+import enlighten
 from defusedxml.lxml import _etree, parse
 from PIL import Image
 
@@ -101,8 +102,6 @@ def find_cover_image(
                     regex = re.findall(IMAGE_PATTERN, image_href, re.IGNORECASE)
                     if not regex:
                         raise Exception
-                    # TODO log
-                    print("Extracted Cover from metadata")
                     return Path(opf_folder, image_href).as_posix()
             raise Exception
         return Path(opf_folder, cover_content).as_posix()
@@ -117,8 +116,6 @@ def find_cover_image(
                     regex = re.findall(IMAGE_PATTERN, image_href, re.IGNORECASE)
                     if not regex:
                         raise Exception
-                    # TODO log
-                    print("Extracted Cover from manifest")
                     return Path(opf_folder, image_href).as_posix()
             raise Exception
         except Exception:
@@ -133,9 +130,7 @@ def find_cover_image(
                     root = parse(
                         StringIO(str(cover_xhtml_content)), parser=_etree.HTMLParser()
                     )
-                    cover_image = root.xpath("//img/@src")[0]
-                    # TODO log
-                    print("Extracted Cover from cover.xhtml file")
+                    cover_image = root.xpath("//img/@src")[0]      
                     return Path(opf_folder, cover_image).as_posix()
             except Exception:
                 pass
@@ -148,6 +143,7 @@ def optimize_epub(
     output_dir: Path,
     only_cover: bool,
     keep_color: bool,
+    log: logging.Logger,
     max_image_resolution: Tuple[int, int] = None,
     tinify_api_key: str = None,
 ) -> Path:
@@ -195,11 +191,16 @@ def optimize_epub(
         else:
             # Find all images inside epub
             images_to_optimize += get_images(epub_zipfile)
+        if len(images_to_optimize) == 0:
+            raise Exception(f"No images found in EPUB {src_epub}")
         for item in epub_zipfile.infolist():
             if item.filename in images_to_optimize:
                 continue
             buffer = epub_zipfile.read(item.filename)
             outzip.writestr(item.filename, buffer)
+        # Setup progress bar
+        manager = enlighten.get_manager()
+        pbar = manager.counter(total=len(images_to_optimize), desc='Ticks', unit='ticks')
         for image_path in images_to_optimize:
             with epub_zipfile.open(image_path) as image_file:
                 ztext = image_file.read()
@@ -215,11 +216,15 @@ def optimize_epub(
                 result_data = result_data.getvalue()
                 if tinify_api_key:
                     tinify.key = tinify_api_key
-                    result_data = tinify.from_buffer(result_data).to_buffer()
+                    try:
+                        result_data = tinify.from_buffer(result_data).to_buffer()
+                    except tinify.AccountError as e:
+                        log.exception(e)
+                        raise Exception(e.message)
                 cover_zipfile = zipfile.ZipInfo(
                     filename=image_path, date_time=datetime.datetime.now().timetuple()
                 )
                 outzip.writestr(cover_zipfile, result_data)
-                # TODO log
-                print(f"Optimized Image {image_path}")
+                log.info("Optimized Image %s", image_path)
+                pbar.update()
         return dst_epub
