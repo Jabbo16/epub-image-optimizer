@@ -1,11 +1,11 @@
 import logging
-import coloredlogs
 import sys
 from glob import glob
 from pathlib import Path
 from typing import Tuple
 
 import click
+import coloredlogs
 import tinify
 from click.exceptions import ClickException
 
@@ -183,7 +183,7 @@ def validate_output_dir(unused_ctx, unused_param, value) -> Path:
     required=False,
     nargs=1,
     default="INFO",
-    type=click.Choice(['INFO', 'DEBUG', 'WARN', 'ERROR'], case_sensitive=False),
+    type=click.Choice(["INFO", "DEBUG", "WARN", "ERROR"], case_sensitive=False),
     help="Set log level, default is 'INFO'",
 )
 @click.option("--version", is_flag=True, help="Show current version")
@@ -235,7 +235,11 @@ def main(
             'Atleast one of the "--input-dir" and "--input-file" parameters is required'
         )
     log = logging.getLogger("epub_image_optimizer")
-    coloredlogs.install(fmt='%(asctime)s,%(msecs)03d %(name)s %(levelname)s %(message)s', level=log_level, logger=log)
+    coloredlogs.install(
+        fmt="%(asctime)s,%(msecs)03d %(name)s %(levelname)s %(message)s",
+        level=log_level,
+        logger=log,
+    )
     input_epubs = None
     if input_dir:
         input_epubs = [Path(epub) for epub in glob(str(Path(input_dir, "*.epub")))]
@@ -247,7 +251,11 @@ def main(
     for input_epub in input_epubs:
         # Create a logger object.
         epub_log = logging.getLogger(input_epub.name)
-        coloredlogs.install(fmt='%(asctime)s,%(msecs)03d %(name)s %(levelname)s %(message)s', level=log_level, logger=epub_log)
+        coloredlogs.install(
+            fmt="%(asctime)s,%(msecs)03d %(name)s %(levelname)s %(message)s",
+            level=log_level,
+            logger=epub_log,
+        )
         try:
             log.info("Optimizing EPUB file %s", input_epub.absolute())
             output_epub = optimize_epub(
