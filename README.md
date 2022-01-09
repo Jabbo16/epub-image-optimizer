@@ -4,6 +4,7 @@
 ![PyPI](https://img.shields.io/pypi/v/epub-image-optimizer)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/epub-image-optimizer)
 [![codecov](https://codecov.io/gh/Jabbo16/epub-image-optimizer/branch/main/graph/badge.svg?token=FCE3APT4ZP)](https://codecov.io/gh/Jabbo16/epub-image-optimizer)
+[![DeepSource](https://deepsource.io/gh/Jabbo16/epub-image-optimizer.svg/?label=active+issues&show_trend=true)](https://deepsource.io/gh/Jabbo16/epub-image-optimizer/?ref=repository-badge)
 ![GitHub](https://img.shields.io/github/license/jabbo16/epub-image-optimizer)
 
 Small Python CLI application to optimize images (including the cover) inside epub files. Perfect fit for optimizing LNs as they usually have a lot of images.
