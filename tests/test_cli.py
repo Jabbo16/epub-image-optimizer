@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
 
-import pytest
 from click.testing import CliRunner
 
 from epub_image_optimizer import __version__
@@ -84,7 +83,3 @@ def test_valid_input_folder():
     result = runner.invoke(main, BASE_COMMAND_FOLDER)
     print(result.output)
     assert result.exit_code == 0
-
-
-if __name__ == "__main__":
-    pytest.main(args=[__file__])
