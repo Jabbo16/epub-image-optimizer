@@ -1,5 +1,6 @@
 # epub-image-optimizer
 
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/jabbo16/epub-image-optimizer/tests)
 ![PyPI](https://img.shields.io/pypi/v/epub-image-optimizer)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/epub-image-optimizer)
 [![codecov](https://codecov.io/gh/Jabbo16/epub-image-optimizer/branch/main/graph/badge.svg?token=FCE3APT4ZP)](https://codecov.io/gh/Jabbo16/epub-image-optimizer)
