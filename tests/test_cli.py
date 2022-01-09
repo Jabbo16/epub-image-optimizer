@@ -27,27 +27,32 @@ runner = CliRunner()
 
 
 def test_version_cli():
+    """ Test the version command """
     result = runner.invoke(main, VERSION_COMMAND)
     assert result.exit_code == 0
     assert result.output.strip() == __version__
 
 
 def test_no_inputs():
+    """ Test error while no input is given """
     result = runner.invoke(main, [])
     assert result.exit_code == 1
 
 
 def test_both_inputs():
+    """ Test error while both type of inputs used """
     result = runner.invoke(main, BAD_BOTH_PARAMS_COMMAND)
     assert result.exit_code == 1
 
 
 def test_bad_tinify_key():
+    """ Test error while bad tinify key is used """
     result = runner.invoke(main, BAD_TINIFY_COMMAND)
     assert result.exit_code == 2
 
 
 def test_bad_max_image_res():
+    """ Test error while bad max image resolution is used """
     result = runner.invoke(main, BAD_MAX_IMAGE_RES_COMMAND_1)
     assert result.exit_code == 2
     result = runner.invoke(main, BAD_MAX_IMAGE_RES_COMMAND_2)
@@ -57,29 +62,34 @@ def test_bad_max_image_res():
 
 
 def test_bad_input_file_not_exists():
+    """ Test error while non-existing input file is given """
     result = runner.invoke(main, BAD_INPUT_FILE_NOTEXISTS_COMMAND)
     assert result.exit_code == 2
     assert result.output.__contains__("does not exist")
 
 
 def test_bad_input_file_not_epub():
+    """ Test error while non-epub input file is given """
     result = runner.invoke(main, BAD_INPUT_FILE_NOT_EPUB_COMMAND)
     assert result.exit_code == 2
     assert result.output.__contains__("not an epub file")
 
 
 def test_bad_input_folder():
+    """ Test error while non-existing input folder is given """
     result = runner.invoke(main, BAD_INPUT_FOLDER_COMMAND)
     assert result.exit_code == 2
     assert result.output.__contains__("does not exist")
 
 
 def test_valid_input_file():
+    """ Test valid input file """
     result = runner.invoke(main, BASE_COMMAND_FILE)
     assert result.exit_code == 0
 
 
 def test_valid_input_folder():
+    """ Test valid input folder """
     result = runner.invoke(main, BASE_COMMAND_FOLDER)
     print(result.output)
     assert result.exit_code == 0
