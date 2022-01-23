@@ -32,12 +32,11 @@ coloredlogs = "^15.0.1"
 enlighten = "^1.10.2"
 
 [tool.poetry.dev-dependencies]
-Pillow = "9.0.0"
-tinify = "1.5.2"
 pytest = "^6.2"
 black = "^21.7b0"
-flake8 = "^4.0.1"
 pytest-cov = "^3.0.0"
+pre-commit = "^2.17.0"
+isort = "^5.10.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -45,3 +44,20 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 epub-image-optimizer = 'epub_image_optimizer.cli:main'
+
+[tool.black]
+target-version = ['py38', 'py39']
+line-length = 88
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.venv
+  | _build
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
