@@ -41,6 +41,8 @@ Options:
   --tinify-api-key TEXT           Tinify api-key
   --only-cover                    Optimize only the cover image, ignoring all
                                   other images
+  --workers INTEGER               Number of threaded workers to use, default
+                                  is 'cpu count + 4'
   --keep-color                    If this flag is present images will preserve
                                   colors (not converted to BW)
   --log-level [INFO|DEBUG|WARN|ERROR]

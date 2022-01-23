@@ -492,7 +492,11 @@ testing = ["coverage (>=4)", "coverage-enable-subprocess (>=1)", "flaky (>=3)", 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
+<<<<<<< HEAD
 content-hash = "f2c345a0838c29b63211df33923739e63dc379337752c13e84dc4b233ac060b5"
+=======
+content-hash = "56efb31ef9daf732c6ddf7bf539bb30d683b8afd892af0b2588e031301418af4"
+>>>>>>> 6e4391b (Minor logging changes (log only debug and exception, dep changes, updated README with 'workers' parameter)
 
 [metadata.files]
 attrs = [

@@ -39,7 +39,7 @@ def validate_input_file(ctx, param, value) -> Path:
         return
     # Check source file is epub
     filename = click.format_filename(value, True)
-    if not filename.__contains__(".epub"):
+    if not filename.endswith(".epub"):
         raise click.BadParameter(f'"{filename}" is not an epub file', ctx, param)
     return value
 
@@ -263,6 +263,7 @@ def main(
         "•",
         TimeRemainingColumn(),
     )
+    click.echo(f"Optimizing {len(input_epubs)} epubs to {output_dir.absolute()}")
     with progress, ThreadPoolExecutor(max_workers=workers) as pool:
         for input_epub in input_epubs:
             # Create a logger object.
@@ -273,7 +274,7 @@ def main(
                 logger=epub_log,
             )
             try:
-                log.info("Optimizing EPUB file %s", input_epub.absolute())
+                log.debug("Optimizing EPUB file %s", input_epub.absolute())
                 task_id = progress.add_task(
                     "optimize", filename=input_epub.name, start=False
                 )
