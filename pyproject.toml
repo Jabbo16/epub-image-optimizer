@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "epub-image-optimizer"
-version = "1.0.0"
+version = "1.1.0"
 description = "Small application to optimize images (and cover) inside epub files"
 authors = ["Javier Sacido <jabbo16@gmail.com>"]
 license = "MIT"
