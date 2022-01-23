@@ -1,15 +1,20 @@
 import logging
+import signal
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from glob import glob
 from pathlib import Path
+from threading import Event
 from typing import Tuple
 
 import click
 import coloredlogs
 import tinify
 from click.exceptions import ClickException
+from rich.progress import BarColumn, Progress, TextColumn, TimeRemainingColumn
 
 from epub_image_optimizer.image_optimizer import optimize_epub
+from epub_image_optimizer.progress_bar import OptimizeImageColumn
 
 DEFAULT_OUTPUT_FOLDER = "./epub_image_optimizer_output"
 MIN_IMAGE_RESOLUTION = (1, 1)
@@ -179,6 +184,14 @@ def validate_output_dir(unused_ctx, unused_param, value) -> Path:
     help="If this flag is present images will preserve colors (not converted to BW)",
 )
 @click.option(
+    "--workers",
+    required=False,
+    nargs=1,
+    default=None,
+    type=int,
+    help="Number of threaded workers to use, default is 'cpu count + 4'",
+)
+@click.option(
     "--log-level",
     required=False,
     nargs=1,
@@ -195,6 +208,7 @@ def main(
     tinify_api_key: str,
     only_cover: bool,
     keep_color: bool,
+    workers: int,
     log_level: str,
     version: bool,
 ):
@@ -232,25 +246,49 @@ def main(
     if not input_epubs:
         # TODO better exception handling overall
         raise Exception(f"No epubs found in input-dir {input_dir}")
-    for input_epub in input_epubs:
-        # Create a logger object.
-        epub_log = logging.getLogger(input_epub.name)
-        coloredlogs.install(
-            fmt="%(asctime)s,%(msecs)03d %(name)s %(levelname)s %(message)s",
-            level=log_level,
-            logger=epub_log,
-        )
-        try:
-            log.info("Optimizing EPUB file %s", input_epub.absolute())
-            output_epub = optimize_epub(
-                input_epub,
-                output_dir,
-                only_cover,
-                keep_color,
-                epub_log,
-                max_image_resolution,
-                tinify_api_key,
+
+    done_event = Event()
+
+    def handle_sigint():
+        """Handle SIGINT signal"""
+        done_event.set()
+
+    signal.signal(signal.SIGINT, handle_sigint)
+    progress = Progress(
+        TextColumn("[bold blue]{task.fields[filename]}", justify="left"),
+        BarColumn(bar_width=None),
+        "[progress.percentage]{task.percentage:>3.1f}%",
+        "•",
+        OptimizeImageColumn(),
+        "•",
+        TimeRemainingColumn(),
+    )
+    with progress, ThreadPoolExecutor(max_workers=workers) as pool:
+        for input_epub in input_epubs:
+            # Create a logger object.
+            epub_log = logging.getLogger(input_epub.name)
+            coloredlogs.install(
+                fmt="%(asctime)s,%(msecs)03d %(name)s %(levelname)s %(message)s",
+                level=log_level,
+                logger=epub_log,
             )
-            log.info("Created optimized EPUB file %s", output_epub.absolute())
-        except Exception as e:
-            log.exception("Error optimizing %s: ", input_epub.name, e)
+            try:
+                log.info("Optimizing EPUB file %s", input_epub.absolute())
+                task_id = progress.add_task(
+                    "optimize", filename=input_epub.name, start=False
+                )
+                pool.submit(
+                    optimize_epub,
+                    input_epub,
+                    output_dir,
+                    only_cover,
+                    keep_color,
+                    epub_log,
+                    progress,
+                    task_id,
+                    done_event,
+                    max_image_resolution,
+                    tinify_api_key,
+                )
+            except Exception as e:
+                log.exception("Error optimizing %s: %s", input_epub.name, e)

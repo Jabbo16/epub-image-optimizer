@@ -4,12 +4,13 @@ import re
 import zipfile
 from io import BytesIO, StringIO
 from pathlib import Path
+from threading import Event
 from typing import List, Tuple
 
-import enlighten
 import tinify
 from defusedxml.lxml import _etree, parse
 from PIL import Image
+from rich.progress import Progress, TaskID
 
 IMAGE_PATTERN = r"([-\w]+\.(?:jpg|png|jpeg))"
 
@@ -73,7 +74,7 @@ def find_cover_image(
     It has 3 different alternatives:
     First, tries to retrieve cover image from metadata tags found in the opf file.
     Second, tries to retrieve cover image from manifest tags found in the opf file.
-    At last, tries to find the cover image by looking at the 'cover.xhtml' file (if present).
+    At last, tries to find the cover image by looking at the 'cover.xhtml' file.
 
     Args:
         opf_file (bytes): content of the .opf file of the epub file
@@ -143,6 +144,9 @@ def optimize_epub(
     only_cover: bool,
     keep_color: bool,
     log: logging.Logger,
+    progress: Progress,
+    task_id: TaskID,
+    done_event: Event,
     max_image_resolution: Tuple[int, int] = None,
     tinify_api_key: str = None,
 ) -> Path:
@@ -154,8 +158,8 @@ def optimize_epub(
         output_dir (Path): Path where the output epub file will be created
         only_cover (bool): if True, optimize only cover image
         keep_color (bool): if True, don't transform images to B&W
-        max_image_resolution (Tuple[int, int], optional): Fit images to this resolution if bigger. Defaults to None.
-        tinify_api_key (str, optional): API key for the Tinify image optimizing service. Defaults to None.
+        max_image_resolution (Tuple[int, int], optional): Fit images to this resolution if bigger.
+        tinify_api_key (str, optional): API key for the Tinify image optimizing service.
 
     Raises:
         Exception: If it can't optimize epub or if cover image is not found (if only_cover is True)
@@ -175,8 +179,8 @@ def optimize_epub(
         if only_cover:
             opf_file_path = get_opf(epub_zipfile)
             if not opf_file_path:
-                pass
                 # TODO do something if not opf found
+                log.warn("OPF file not found")
             opf_folder = Path(opf_file_path).parent
             cover_image_path = None
             with epub_zipfile.open(opf_file_path, "r") as opf_file:
@@ -198,10 +202,8 @@ def optimize_epub(
             buffer = epub_zipfile.read(item.filename)
             outzip.writestr(item.filename, buffer)
         # Setup progress bar
-        manager = enlighten.get_manager()
-        pbar = manager.counter(
-            total=len(images_to_optimize), desc="Ticks", unit="ticks"
-        )
+        progress.update(task_id, total=int(len(images_to_optimize)))
+        progress.start_task(task_id)
         for image_path in images_to_optimize:
             with epub_zipfile.open(image_path) as image_file:
                 ztext = image_file.read()
@@ -226,6 +228,8 @@ def optimize_epub(
                     filename=image_path, date_time=datetime.datetime.now().timetuple()
                 )
                 outzip.writestr(cover_zipfile, result_data)
-                log.info("Optimized Image %s", image_path)
-                pbar.update()
+                log.debug("Optimized Image %s", image_path)
+                progress.update(task_id, advance=1)
+                if done_event.is_set():
+                    return dst_epub
         return dst_epub
