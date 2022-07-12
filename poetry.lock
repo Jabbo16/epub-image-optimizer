@@ -294,7 +294,7 @@ testing = ["pytest", "pytest-benchmark"]
 
 [[package]]
 name = "pre-commit"
-version = "2.19.0"
+version = "2.20.0"
 description = "A framework for managing and maintaining multi-language pre-commit hooks."
 category = "dev"
 optional = false
@@ -501,7 +501,7 @@ testing = ["coverage (>=4)", "coverage-enable-subprocess (>=1)", "flaky (>=3)", 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "584519e059aa5b4f34bcb0a65b8865838a8f3c15f73819288da9fd1517e26665"
+content-hash = "1c5e39d04018cf798e28034766f1264359ba4e260462c490bf58dba81efee721"
 
 [metadata.files]
 atomicwrites = []

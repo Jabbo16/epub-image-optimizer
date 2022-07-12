@@ -35,7 +35,7 @@ rich = ">=11,<13"
 pytest = "^7.1"
 black = "^22.6"
 pytest-cov = "^3.0.0"
-pre-commit = "^2.19.0"
+pre-commit = "^2.20.0"
 isort = "^5.10.1"
 
 [build-system]
