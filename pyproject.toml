@@ -33,7 +33,7 @@ rich = ">=11,<13"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.1"
-black = "^22.6"
+black = "^22.8"
 pytest-cov = "^3.0.0"
 pre-commit = "^2.20.0"
 isort = "^5.10.1"
