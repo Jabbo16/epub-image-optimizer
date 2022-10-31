@@ -24,7 +24,7 @@ include = [
 [tool.poetry.dependencies]
 python = "^3.8"
 tinify = "1.6.0"
-Pillow = "9.2.0"
+Pillow = "9.3.0"
 click = "^8.0.1"
 lxml = "^4.6.3"
 defusedxml = "^0.7.1"
