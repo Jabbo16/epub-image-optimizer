@@ -8,7 +8,7 @@ from threading import Event
 from typing import List, Tuple
 
 import tinify
-from defusedxml.lxml import _etree, parse
+from lxml.etree import fromstring, HTMLParser
 from PIL import Image
 from rich.progress import Progress, TaskID
 
@@ -84,7 +84,7 @@ def find_cover_image(
     Returns:
         Path: Cover image location
     """
-    root = _etree.fromstring(opf_file)
+    root = fromstring(opf_file)
     ns = {"opf": "http://www.idpf.org/2007/opf"}
     try:
         # Method #1: Search metadata first
@@ -129,7 +129,7 @@ def find_cover_image(
                 with epub_zipfile.open(cover_xhtml_path, "r") as cover_xhtml_file:
                     cover_xhtml_content = cover_xhtml_file.read()
                     root = parse(
-                        StringIO(str(cover_xhtml_content)), parser=_etree.HTMLParser()
+                        StringIO(str(cover_xhtml_content)), parser=HTMLParser()
                     )
                     cover_image = root.xpath("//img/@src")[0]
                     return Path(opf_folder, cover_image).as_posix()
