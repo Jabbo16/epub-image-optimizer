@@ -8,7 +8,7 @@ from threading import Event
 from typing import List, Tuple
 
 import tinify
-from lxml.etree import fromstring, HTMLParser
+from lxml.etree import fromstring, HTMLParser, parse
 from PIL import Image
 from rich.progress import Progress, TaskID
 
