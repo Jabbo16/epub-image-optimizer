@@ -88,9 +88,3 @@ epub-image-optimizer --input-dir <folder> --max-image-resolution 1680 1264 --tin
 ```
 
 Note: This will optimize all epubs inside `input-dir` folder, used my Kobo Libra H2O screen size as example.
-
-## Development
-
-[Poetry](https://github.com/python-poetry/poetry) is used for managing packages, dependencies and building the project.
-
-Poetry can be installed by following the [instructions](https://github.com/python-poetry/poetry). Afterwards you can use `poetry install` within the project folder to install all dependencies.

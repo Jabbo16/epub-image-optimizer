@@ -1,13 +1,18 @@
-[tool.poetry]
+[project]
 name = "epub-image-optimizer"
 version = "1.2.0"
 description = "Small application to optimize images (and cover) inside epub files"
-authors = ["Javier Sacido <jabbo16@gmail.com>"]
-license = "MIT"
+authors = [{ name = "Javier Sacido", email = "jabbo16@gmail.com" }]
+requires-python = "~=3.12"
 readme = "README.md"
-homepage = "https://github.com/Jabbo16/epub-image-optimizer"
-repository = "https://github.com/Jabbo16/epub-image-optimizer"
-keywords = ["epub", "image", "optimizer", "cli", "tinify"]
+license = "MIT"
+keywords = [
+    "epub",
+    "image",
+    "optimizer",
+    "cli",
+    "tinify",
+]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
@@ -17,47 +22,45 @@ classifiers = [
     "Topic :: Utilities",
     "Intended Audience :: End Users/Desktop",
 ]
-include = [
-    "LICENSE",
+dependencies = [
+    "tinify==1.6.0",
+    "Pillow==11.1.0",
+    "click>=8.1.8,<9",
+    "lxml>=5.3.0,<6",
+    "coloredlogs>=15.0.1,<16",
+    "rich>=13.9.4,<14",
+    "pyyaml>=6.0.2,<7",
 ]
 
-[tool.poetry.dependencies]
-python = "^3.12"
-tinify = "1.6.0"
-Pillow = "11.1.0"
-click = "^8.1.8"
-lxml = "^5.3.0"
-coloredlogs = "^15.0.1"
-rich = "^13.9.4"
-pyyaml = "^6.0.2"
+[project.urls]
+Homepage = "https://github.com/Jabbo16/epub-image-optimizer"
+Repository = "https://github.com/Jabbo16/epub-image-optimizer"
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.3.4"
-black = ">=24.10,<26.0"
-pytest-cov = "^6.0.0"
-pre-commit = "^4.0.1"
-isort = ">=5.13.2,<7.0.0"
+[project.scripts]
+epub-image-optimizer = "epub_image_optimizer.cli:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.4,<9",
+    "pytest-cov>=6.0.0,<7",
+    "pre-commit>=4.0.1,<5",
+    "ruff>=0.9.4",
+]
+
+[tool.hatch.build.targets.sdist]
+include = ["LICENSE"]
+
+[tool.hatch.build.targets.wheel]
+include = ["LICENSE"]
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.poetry.scripts]
-epub-image-optimizer = 'epub_image_optimizer.cli:main'
-
-[tool.black]
-target-version = ['py312', 'py313']
+[tool.ruff]
+target-version = "py312"
 line-length = 88
-include = '\.pyi?$'
-exclude = '''
-/(
-    \.git
-  | \.venv
-  | _build
-  | build
-  | dist
-)/
-'''
+indent-width = 4
 
-[tool.isort]
-profile = "black"
+[tool.ruff.lint]
+extend-select = ["E501"]

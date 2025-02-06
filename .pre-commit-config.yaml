@@ -1,16 +1,10 @@
 fail_fast: true
 repos:
-  - repo: local
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.9.4
     hooks:
-      - id: system
-        name: Black
-        entry: poetry run black .
-        pass_filenames: false
-        language: system
-  - repo: local
-    hooks:
-      - id: system
-        name: Isort
-        entry: poetry run isort .
-        pass_filenames: false
-        language: system
+      # Run the linter.
+      - id: ruff
+      # Run the formatter.
+      - id: ruff-format
