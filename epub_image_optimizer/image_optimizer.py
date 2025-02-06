@@ -158,11 +158,13 @@ def optimize_epub(
         output_dir (Path): Path where the output epub file will be created
         only_cover (bool): if True, optimize only cover image
         keep_color (bool): if True, don't transform images to B&W
-        max_image_resolution (Tuple[int, int], optional): Fit images to this resolution if bigger.
+        max_image_resolution (Tuple[int, int], optional): Fit images to this resolution
+            if bigger
         tinify_api_key (str, optional): API key for the Tinify image optimizing service.
 
     Raises:
-        Exception: If it can't optimize epub or if cover image is not found (if only_cover is True)
+        Exception: If it can't optimize epub or if cover image is not found
+            (if only_cover is True)
 
     Returns:
         Path: Path to the generated, optimized epub file
@@ -172,9 +174,12 @@ def optimize_epub(
         output_dir, src_epub.name.replace(".epub", "_optimized.epub")
     ).absolute()
 
-    with zipfile.ZipFile(src_epub) as epub_zipfile, zipfile.ZipFile(
-        dst_epub, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9
-    ) as outzip:
+    with (
+        zipfile.ZipFile(src_epub) as epub_zipfile,
+        zipfile.ZipFile(
+            dst_epub, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9
+        ) as outzip,
+    ):
         images_to_optimize = []
         if only_cover:
             opf_file_path = get_opf(epub_zipfile)

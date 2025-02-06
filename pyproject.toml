@@ -64,3 +64,7 @@ indent-width = 4
 
 [tool.ruff.lint]
 extend-select = ["E501"]
+
+[tool.ruff.format]
+docstring-code-format = true
+docstring-code-line-length = 88
