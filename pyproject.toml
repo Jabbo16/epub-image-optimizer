@@ -41,7 +41,7 @@ epub-image-optimizer = "epub_image_optimizer.cli:main"
 
 [dependency-groups]
 dev = [
-    "pytest>=8.3.4,<9",
+    "pytest>=8.3.4,<10",
     "pytest-cov>=6.0.0,<8",
     "pre-commit>=4.0.1,<5",
     "ruff>=0.9.4",
